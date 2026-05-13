@@ -4,10 +4,6 @@ The Electron desktop app. Connects to the game server over WebSocket, renders th
 
 Current version: **2.7.0**
 
-> **⚠️ Work in Progress**
->
-> The client is actively being developed and may have bugs or incomplete features. Download the latest stable release from **#releases** in the [Discord server](https://discord.gg/s3EpTjXjGh) rather than building from source if you just want to play.
-
 ---
 
 ## Files

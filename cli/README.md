@@ -2,11 +2,13 @@
 
 A single Windows binary (`idlesys.exe`) that lets you play IDLE.SYS from the terminal. Includes a live Textual dashboard (`idlesys tui`) and scriptable subcommands for automation.
 
-> **⚠️ Work in Progress**
+> **⚠️ Work in Progress — CLI subcommands are buggy**
 >
-> The CLI and TUI are functional but still buggy and incomplete. Some features may not work correctly or at all. The Electron desktop client is the stable, fully-featured way to play. The CLI is best suited for scripting and automation right now — the TUI is usable but rough around the edges.
+> The individual command-line subcommands (`idlesys click`, `idlesys blackjack`, etc.) are still being worked on and may behave incorrectly or produce unexpected output. The scripting interface (`idlesys script`, `idlesys raw`) is the most reliable path for automation right now.
 >
-> Bug reports and contributions are welcome — see the main [CONTRIBUTING](#contributing) section below.
+> The **Electron desktop client** is the stable, fully-featured way to play. Use the CLI if you want to script, automate, or live in the terminal — just expect rough edges.
+>
+> Bug reports and contributions are welcome.
 
 ---
 
