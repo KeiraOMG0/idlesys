@@ -133,10 +133,10 @@ Connect to `wss://idlesys.xyz`. All messages are JSON objects.
 | `login` | `player_id: str` | `login_token: str`, `version: str`, `is_web: bool` | Send a fresh UUID for `player_id` to create a new account; server replies with `token_issued` then `login_ok`. Include `version` (semver) so the server can send `update_available` if the client is outdated. `is_web: true` suppresses `update_available` for web clients. |
 | `chat_send` | `text: str (max 200 chars)` | — | 2s rate limit per player |
 | `report` | `target_id: str`, `reason: str` | `context: str (max 300 chars)` | `reason` must be one of: `"spam"`, `"hate_speech"`, `"cheating"`, `"harassment"`, `"inappropriate_name"`, `"other"` |
-| `trade_offer` | `target_id: str`, `offer_money: int`, `request_money: int` | — | — |
-| `trade_counter` | `trade_id: str`, `offer_money: int`, `request_money: int` | — | — |
-| `trade_accept` | `trade_id: str` | — | — |
-| `trade_reject` | `trade_id: str` | — | — |
+| `trade_offer` | `target_id: str`, `asset: str`, `shares: int`, `price: int` | — | `asset`: `"SRV"`, `"GPU"`, `"ZRO"`, `"NET"`, `"CPU"`; `shares` = how many you're selling; `price` = total asking price. Target must be online. You must hold enough shares. |
+| `trade_counter` | `trade_id: str` | `shares: int`, `price: int` | Either party can counter; omitted fields keep current value |
+| `trade_accept` | `trade_id: str` | — | Only the recipient (target) can accept; buyer's balance must cover `price` |
+| `trade_reject` | `trade_id: str` | — | Either party can reject |
 | `trade_message` | `trade_id: str`, `text: str` | — | — |
 | `check_update` | — | — | Returns `update_available` if newer version exists |
 | `ping` | — | — | No reply expected |
@@ -232,9 +232,10 @@ All return `{"type": "action_ok", "action": "str", "state": {...}}` or `{"type":
 | `crash_result` | `result: "cashout"\|"crashed", payout: int, state` | Round ended |
 | `hack_started` | — | Your hack attempt began |
 | `hack_result` | `stolen: int, state` | Hack completed (stolen=0 on failure) |
-| `trade_offer` | `trade_id, from_name, offer_money, request_money` | Incoming trade offer |
-| `trade_update` | `trade_id, ...` | Counter-offer received |
-| `trade_complete` | `trade_id, ...` | Trade accepted and executed |
+| `trade_sent` | `trade: {id, initiator, target, asset, shares, price, status}` | Confirmation sent to the offer initiator |
+| `trade_incoming` | `trade: {id, initiator, target, asset, shares, price, status}` | Incoming trade offer sent to the target |
+| `trade_updated` | `trade: {id, ..., shares, price}` | Sent to both parties when either counters |
+| `trade_completed` | `trade: {id, ...}` | Trade accepted and executed; both parties receive updated state |
 | `token_issued` | `token: str` | New login token — save immediately |
 | `require_tos` | `tos_url, privacy_url` | Must call `accept_tos` before playing |
 | `update_available` | `version, notes, url` | Sent on login or `check_update` when client `version` is behind server; not sent to web clients (`is_web: true`) |
