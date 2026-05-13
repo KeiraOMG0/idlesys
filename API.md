@@ -198,9 +198,7 @@ All return `{"type": "action_ok", "action": "str", "state": {...}}` or `{"type":
 | `send_money` | `target_id: str`, `amount: int` | — | 10% tax (reducible via skill tree) |
 | `redeem_badge` | `code: str` | — | Code is case-insensitive, converted to uppercase |
 | `set_active_badge` | `badge: str` | — | Must already own the badge |
-| `gen_link_code` | — | — | Returns a 6-char code valid 10 min; used for Discord linking |
-| `discord_oauth_start` | — | — | Returns OAuth2 URL; open in browser |
-| `delink_discord` | — | — | Removes Discord link |
+| `gen_link_code` | — | — | Returns `{code: str, expires_in: 600}`; give the code to the Discord bot to link your account |
 
 #### Poker (top-level type — no `"action"` wrapper)
 
