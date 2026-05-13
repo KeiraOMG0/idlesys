@@ -1023,10 +1023,12 @@ function connect (url) {
     } catch (err) { console.error(err) }
   }
 
-  ws.onclose = () => {
+  ws.onclose = (e) => {
     clearTimeout(connectTimeout)
     isConnected = false
     setConnStatus('offline', 'OFFLINE')
+    const reason = e.reason ? ` (${e.reason})` : ''
+    console.warn(`WS closed — code=${e.code}${reason}`)
     log('Disconnected from server', 'err')
     stopPing()
     scheduleReconnect()

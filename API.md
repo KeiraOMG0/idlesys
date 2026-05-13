@@ -104,7 +104,7 @@ Connect to `wss://idlesys.xyz`. All messages are JSON objects.
   "id": "uuid-str",
   "name": "str",
   "money": int,
-  "income_per_sec": int,
+  "income": int,
   "click_value": int,
   "clicks": int,
   "prestige_count": int,
@@ -130,7 +130,7 @@ Connect to `wss://idlesys.xyz`. All messages are JSON objects.
 
 | Type | Required fields | Optional fields | Notes |
 |------|----------------|-----------------|-------|
-| `login` | `player_id: str` | `login_token: str` | Send empty string for `player_id` to create a new account; server replies with `token_issued` then `login_ok` |
+| `login` | `player_id: str` | `login_token: str`, `version: str`, `is_web: bool` | Send a fresh UUID for `player_id` to create a new account; server replies with `token_issued` then `login_ok`. Include `version` (semver) so the server can send `update_available` if the client is outdated. `is_web: true` suppresses `update_available` for web clients. |
 | `chat_send` | `text: str (max 200 chars)` | — | 2s rate limit per player |
 | `report` | `target_id: str`, `reason: str` | `context: str (max 300 chars)` | `reason` must be one of: `"spam"`, `"hate_speech"`, `"cheating"`, `"harassment"`, `"inappropriate_name"`, `"other"` |
 | `trade_offer` | `target_id: str`, `offer_money: int`, `request_money: int` | — | — |
@@ -237,4 +237,5 @@ All return `{"type": "action_ok", "action": "str", "state": {...}}` or `{"type":
 | `trade_complete` | `trade_id, ...` | Trade accepted and executed |
 | `token_issued` | `token: str` | New login token — save immediately |
 | `require_tos` | `tos_url, privacy_url` | Must call `accept_tos` before playing |
-| `update_available` | `version, notes, url` | New client version available |
+| `update_available` | `version, notes, url` | Sent on login or `check_update` when client `version` is behind server; not sent to web clients (`is_web: true`) |
+| `up_to_date` | — | Response to `check_update` when client is already on the latest version |
