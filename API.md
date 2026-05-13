@@ -1,6 +1,6 @@
 # IDLE.SYS — API Reference
 
-Live server: `wss://idlesys.xyz` (WebSocket) · `https://idlesys.xyz` (HTTP)
+Live server: `wss://idlesys.xyz` (WebSocket) · `https://idlesys.xyz/web` (Web UI)
 
 Use this document to build clients, bots, and automation tools against the live server.
 The CLI source (`cli/idlesys_cli.py`) is the reference implementation — check it for working examples of every message type.

@@ -13,7 +13,7 @@ Built with **Electron** (desktop client) and a **Python/aiohttp** WebSocket serv
 | `client/` | Electron desktop client — all UI, game logic rendering, Discord RPC |
 | `cli/` | `idlesys.exe` — terminal CLI + live TUI dashboard, scriptable automation |
 
-The game server, Discord bot, and deploy tooling are **not** open-sourced. See [API.md](API.md) for the full WebSocket and HTTP API so you can build clients, bots, and tools against the live server at `wss://idlesys.xyz`.
+The game server, Discord bot, and deploy tooling are **not** open-sourced. See [API.md](API.md) for the full WebSocket and HTTP API so you can build clients, bots, and tools against the live server at `wss://idlesys.xyz`. Web UI is at `https://idlesys.xyz/web`.
 
 ---
 
