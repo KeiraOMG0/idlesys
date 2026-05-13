@@ -91,8 +91,8 @@ Tabs are defined in `index.html` and all logic lives in `renderer.js`.
 | CASINO | `casino` | Blackjack, roulette, crash, loans, black market, insurance |
 | POKER | `poker` | Multiplayer poker — create/join rooms, full hand logic |
 | MARKET | `market` | Stock market — 5 assets (SRV/GPU/ZRO/NET/CPU), buy/sell, supply curve |
-| MISC | `misc` | Prestige upgrades, operations (daily contracts) |
-| SETTINGS | `settings` | Discord Rich Presence toggle, FPS cap, number format |
+| MISC | `misc` | Prestige upgrades |
+| SETTINGS | `settings` | FPS cap, number format |
 | ? | `help` | In-game help / keybinds |
 
 The CHAT tab is hidden by default and shown when the server pushes a chat message.
@@ -134,14 +134,20 @@ The allowlist for `openExternal` is in `main.js` — add domains there if new OA
 
 ---
 
-## Auto-updater
+## Updates
 
-When the server sends an `update_available` WS message, the client shows an update banner. Clicking it triggers `download-update` via IPC, which:
+| Client | How updates work |
+|--------|-----------------|
+| Electron | Server sends `update_available` over WS → client shows a banner → user clicks to download and install |
+| CLI / TUI | Server sends `update_available` over WS → TUI shows a warning → user downloads new `idlesys.exe` from Discord |
+| Web (`/play`) | Always served the latest version — just refresh the page |
 
-1. Downloads the installer to a temp directory (`%LOCALAPPDATA%\Temp\idle-sys-update\`)
-2. Streams download progress back to the renderer
-3. Opens the installer via `shell.openPath` (equivalent to double-clicking in Explorer)
-4. Quits the app so the installer can replace it (skipped on macOS — user drags manually)
+**Where to get releases:** the **#releases** channel in the [Discord server](https://discord.gg/s3EpTjXjGh). Both `IDLE.SYS-Setup.exe` and `idlesys.exe` are posted there with SHA256 hashes.
+
+When the Electron client downloads an update it:
+1. Downloads the installer to a temp directory
+2. Streams progress back to the renderer
+3. Opens the installer via `shell.openPath` and quits so it can replace itself
 
 Platform installer names are defined in `platform.js`:
 
@@ -155,11 +161,9 @@ Platform installer names are defined in `platform.js`:
 
 ## Bumping the version
 
-1. Update `version` in `server/config.json` — `prebuild.ps1` syncs it everywhere else automatically on the next build.
-2. Add a changelog entry in `server/main.py` → `handle_changelog`.
-3. Run `npm run pack` from `client/`.
-4. Restart the server.
-5. Run `/admin release` in Discord — the bot posts both `IDLE.SYS-Setup.exe` and `idlesys.exe` with SHA256s.
+1. Update `version` in `server/config.json` — `prebuild.ps1` syncs it into `package.json` and `renderer.js` automatically on the next build.
+2. Run `npm run pack` from `client/`.
+3. Run `/admin release` in Discord — the bot posts both `IDLE.SYS-Setup.exe` and `idlesys.exe` with SHA256s.
 
 ---
 
