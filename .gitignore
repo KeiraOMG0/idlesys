@@ -1,0 +1,49 @@
+# ── Private / never publish ────────────────────────────────────────────────────
+server/
+bot/
+selfbot/
+mobile/
+tmp/
+dist/
+.env
+.env.*
+
+# ── Build output ───────────────────────────────────────────────────────────────
+cli/dist/
+cli/build/
+cli/*.spec
+client/win-unpacked/
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+cli/venv/
+*.egg-info/
+
+# ── Node / Electron ────────────────────────────────────────────────────────────
+node_modules/
+client/node_modules/
+pnpm-lock.yaml
+package-lock.json
+*.log
+
+# ── OS / editor ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Claude Code internal ───────────────────────────────────────────────────────
+.claude/
+
+# ── Game data / secrets ────────────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+config.json
+market_state.json
+season_state.json
+filter.json

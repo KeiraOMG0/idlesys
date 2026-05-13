@@ -1,0 +1,53 @@
+{
+  "name": "idle-sys",
+  "version": "2.7.0",
+  "description": "IDLE.SYS — Multiplayer Incremental Game",
+  "main": "main.js",
+  "author": "Keira",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "powershell -ExecutionPolicy Bypass -File prebuild.ps1 && electron-builder --win --x64 && cmd /c \"cd ..\\cli && build.bat\"",
+    "pack:mac": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.keira.idle-sys",
+    "productName": "IDLE.SYS",
+    "directories": {
+      "output": "../dist"
+    },
+    "files": [
+      "main.js",
+      "platform.js",
+      "preload.js",
+      "renderer.js",
+      "connection.js",
+      "index.html",
+      "assets/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "IDLE.SYS-Setup.${ext}"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Game"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    }
+  },
+  "dependencies": {}
+}

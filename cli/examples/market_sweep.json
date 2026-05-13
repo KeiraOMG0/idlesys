@@ -1,0 +1,5 @@
+[
+  {"action": "get_market"},
+  {"action": "market_buy",  "asset": "GPU", "qty": 10},
+  {"action": "market_sell", "asset": "SRV", "qty": -1}
+]

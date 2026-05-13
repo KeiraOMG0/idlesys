@@ -1,0 +1,15 @@
+[
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "click"},
+  {"action": "buy_upgrade", "upgrade_id": "auto_1"},
+  {"action": "buy_upgrade", "upgrade_id": "auto_1"},
+  {"action": "buy_upgrade", "upgrade_id": "auto_1"}
+]
