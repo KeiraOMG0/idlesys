@@ -25,7 +25,6 @@ cli/venv/
 node_modules/
 client/node_modules/
 pnpm-lock.yaml
-package-lock.json
 *.log
 
 # ── OS / editor ────────────────────────────────────────────────────────────────
