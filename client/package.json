@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "pack": "powershell -ExecutionPolicy Bypass -File prebuild.ps1 && electron-builder --win --x64 && cmd /c \"cd ..\\cli && build.bat\"",
+    "pack": "powershell -ExecutionPolicy Bypass -File prebuild.ps1 && electron-builder --win --x64 && powershell -ExecutionPolicy Bypass -Command \"Push-Location ..\\cli; .\\build.ps1; Pop-Location\"",
     "pack:mac": "electron-builder --mac"
   },
   "devDependencies": {
