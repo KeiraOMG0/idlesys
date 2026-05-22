@@ -1,5 +1,5 @@
 /**
- * IDLE.SYS — Renderer v2.7.0
+ * IDLE.SYS — Renderer v2.7.1
  */
 
 // ── Bind window controls IMMEDIATELY ─────────────────────────────────────────
@@ -47,6 +47,7 @@ const DISCORD_LINK          = 'https://discord.gg/s3EpTjXjGh'
 const HACK_DURATION_MS      = 10 * 60 * 1000
 const HACK_COOLDOWN_MS      = 3 * 60 * 60 * 1000
 const COST_SCALE            = 1.35
+const D = (n) => new Decimal(n == null ? 0 : n)
 
 // Debug helper
 const dbg = (...args) => console.log('[idle.sys]', ...args)
@@ -113,8 +114,8 @@ let serverVersion  = ''
 let upgrades       = []
 let skillTree      = []
 let player         = {
-  money: 0, income: 1, total_earned: 0, name: '', checksum: '',
-  clicks: 0, click_value: 1, click_multiplier: 0,
+  money: D(0), income: D(1), total_earned: D(0), name: '', checksum: '',
+  clicks: 0, click_value: D(1), click_multiplier: 0,
   name_changes: 0, name_tokens: 0, upgrades_bought: {}, hack_unlocked: false,
   prestige_points: 0, prestige_multiplier: 1,
 }
@@ -598,7 +599,7 @@ async function init () {
       const buyin  = parseFloat(btn.dataset.buyin)
       const maxbet = parseFloat(btn.dataset.maxbet)
       if (!isConnected) { log('Connect to a server first', 'warn'); return }
-      if (player.money < buyin) { log(`Need $${fmt(buyin)} to sit at this table`, 'warn'); return }
+      if (player.money.lt(buyin)) { log(`Need $${fmt(buyin)} to sit at this table`, 'warn'); return }
       bjCurrentMaxBet = maxbet
       if (el.bjTableLabel)  el.bjTableLabel.textContent  = `$${fmt(buyin)} table`
       if (el.bjMaxDisplay)  el.bjMaxDisplay.textContent  = `$${fmt(maxbet)}`
@@ -631,7 +632,7 @@ async function init () {
     if (!isConnected) { log('Connect to a server first', 'warn'); return }
     const bet = parseShortNum(el.rlBetInput?.value || '0')
     if (!bet || bet <= 0)  { log('Enter a valid bet', 'warn'); return }
-    if (bet * 1.05 > player.money) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
+    if (D(bet).mul(1.05).gt(player.money)) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
     const num = rlCurrentType === 'straight' ? parseInt(el.rlNumberInput?.value || '-1', 10) : undefined
     if (rlCurrentType === 'straight' && (isNaN(num) || num < 0 || num > 36)) {
       log('Pick a number 0–36', 'warn'); return
@@ -859,7 +860,7 @@ async function init () {
     for (const [, price] of Object.entries(marketPrices)) {
       if (price < minPrice) minPrice = price
     }
-    const maxQty = (minPrice < Infinity && player.money > 0) ? Math.floor(player.money / minPrice) : 1
+    const maxQty = (minPrice < Infinity && player.money.gt(0)) ? player.money.div(minPrice).floor().toNumber() : 1
     el.value = Math.max(1, maxQty)
   })
 
@@ -1636,7 +1637,7 @@ function renderHackUI () {
       encryptStatus.textContent = `ACTIVE — ${fmtPlaytime(secsLeft)} remaining`
       encryptStatus.style.color = 'var(--green)'
     } else {
-      const cost = Math.max(1_000_000, Math.round((player.money || 0) * 0.20))
+      const cost = Decimal.max(1_000_000, player.money.mul(0.20).floor())
       encryptStatus.textContent = `Cost: $${fmt(cost)}`
       encryptStatus.style.color = 'var(--dim)'
     }
@@ -1776,29 +1777,30 @@ function getUpgradeCount (uId) {
 function _maxAffordableQty (u, money, maxAllowed) {
   const count = getUpgradeCount(u.id)
   const scale = u.cost_scale ?? COST_SCALE
-  const baseCostAtLevel = u.base_cost * Math.pow(scale, count)
-  if (baseCostAtLevel <= 0 || money < baseCostAtLevel) return 0
+  const baseCostAtLevel = D(u.base_cost).mul(Decimal.pow(scale, count))
+  if (baseCostAtLevel.lte(0) || D(money).lt(baseCostAtLevel)) return 0
   let qty
   if (Math.abs(scale - 1) < 1e-9) {
-    qty = Math.floor(money / baseCostAtLevel)
+    qty = D(money).div(baseCostAtLevel).floor().toNumber()
   } else {
-    qty = Math.floor(Math.log(money * (scale - 1) / baseCostAtLevel + 1) / Math.log(scale))
+    qty = D(money).mul(scale - 1).div(baseCostAtLevel).add(1).log(scale).floor().toNumber()
   }
+  if (!isFinite(qty) || isNaN(qty)) qty = maxAllowed
   return Math.max(0, Math.min(qty, maxAllowed))
 }
 
 function getUpgradeCost (u) {
   const count = getUpgradeCount(u.id)
   const scale = u.cost_scale ?? COST_SCALE
-  return Math.round(u.base_cost * Math.pow(scale, count))
+  return D(u.base_cost).mul(Decimal.pow(scale, count))
 }
 
 function getUpgradeBulkCost (u, qty) {
   const scale = u.cost_scale ?? COST_SCALE
   const count = getUpgradeCount(u.id)
   if (qty <= 1) return getUpgradeCost(u)
-  if (scale === 1.0) return Math.round(u.base_cost * qty)
-  return Math.round(u.base_cost * Math.pow(scale, count) * (Math.pow(scale, qty) - 1) / (scale - 1))
+  if (scale === 1.0) return D(u.base_cost).mul(qty)
+  return D(u.base_cost).mul(Decimal.pow(scale, count)).mul(Decimal.pow(scale, qty).sub(1)).div(scale - 1)
 }
 
 function getTotalUpgradesBought () {
@@ -1816,11 +1818,15 @@ function getCategoryUpgradesBought (category) {
 // ── Discord RPC ───────────────────────────────────────────────────────────────
 // ── State rendering ───────────────────────────────────────────────────────────
 function applyState (s) {
-  const prev = player.money
+  const prev = D(player.money)
   const prevPrestige = player.prestige_count || 0
   player = { ...player, ...s }
+  player.money       = D(s.money)
+  player.income      = D(s.income)
+  player.total_earned= D(s.total_earned)
+  player.click_value = D(s.click_value)
 
-  if (Math.floor(s.money) !== Math.floor(prev)) {
+  if (!D(s.money).floor().eq(prev.floor())) {
     el.statMoney.classList.remove('bump')
     void el.statMoney.offsetWidth
     el.statMoney.classList.add('bump')
@@ -1934,7 +1940,7 @@ function renderUpgrades () {
       effQty = atMax ? 0 : remaining
     }
     const totalCost  = effQty > 1 ? getUpgradeBulkCost(u, effQty) : cost
-    const canAfford  = player.money >= totalCost && !atMax
+    const canAfford  = player.money.gte(totalCost) && !atMax
     const isUnlocked = catBought >= u.req_count
     const isHidden   = u.hidden && !isUnlocked
 
@@ -1997,7 +2003,7 @@ function updateUpgradeAffordability () {
       effQty = atMax ? 0 : remaining
     }
     const totalCost = effQty > 1 ? getUpgradeBulkCost(u, effQty) : cost
-    const canAfford = player.money >= totalCost && !atMax
+    const canAfford = player.money.gte(totalCost) && !atMax
 
     card.className = `upgrade-card ${canAfford && isUnlocked ? 'affordable' : 'locked'} ${isHidden ? 'hidden-tier' : ''}`
 
@@ -2056,15 +2062,16 @@ function clientPrestigeCost () {
 }
 
 function prestige_points_gained (money, cost) {
-  if (money < cost) return 0
-  return Math.max(1, Math.floor(Math.sqrt(money / cost)))
+  const dm = D(money), dc = D(cost)
+  if (dm.lt(dc)) return 0
+  return Math.max(1, dm.div(dc).sqrt().floor().toNumber())
 }
 
 function renderPrestigePanel (container) {
   container.innerHTML = ''
-  const money       = player.money || 0
-  const cost        = clientPrestigeCost()
-  const canPrestige = money >= cost
+  const money       = player.money
+  const cost        = D(clientPrestigeCost())
+  const canPrestige = money.gte(cost)
   const pointsGain  = canPrestige ? prestige_points_gained(money, cost) : 0
   const pCount      = player.prestige_count || 0
 
@@ -2092,7 +2099,7 @@ function renderPrestigePanel (container) {
       PP in skill tree: <b>${(player.pp_spent_skills || 0)}</b>
     </div>
     <div class="sub" style="margin-top:6px; color:var(--muted); font-size:10px;">
-      Next cost: $${fmt(Math.floor(cost * PRESTIGE_COST_MULT))} &nbsp;|&nbsp; Open <b>SKILL</b> tab to spend PP
+      Next cost: $${fmt(cost.mul(PRESTIGE_COST_MULT).floor())} &nbsp;|&nbsp; Open <b>SKILL</b> tab to spend PP
     </div>
   `
   container.appendChild(div)
@@ -2238,7 +2245,7 @@ function buySkillNode (nodeId, nodeName, cost) {
 function doPrestige () {
   if (!isConnected) { log('Not connected', 'err'); return }
   const cost = clientPrestigeCost()
-  if ((player.money || 0) < cost) {
+  if (player.money.lt(cost)) {
     log(`Need $${fmt(cost)} on hand to prestige`, 'warn')
     return
   }
@@ -2780,19 +2787,22 @@ let numFmtStyle = localStorage.getItem('numFmt') || 'letter'
 
 function fmt (n) {
   if (n == null) return '0'
-  n = Math.floor(n)
+  const d = D(n).floor()
   if (numFmtStyle === 'scientific') {
-    if (n === 0) return '0'
-    return n.toExponential(2).replace('e+','e')
+    if (d.eq(0)) return '0'
+    return d.toExponential(2).replace('e+', 'e')
   }
-  if (numFmtStyle === 'full') return n.toLocaleString()
+  if (numFmtStyle === 'full') {
+    if (d.lt('1e15')) return Math.floor(d.toNumber()).toLocaleString()
+    return d.toExponential(2).replace('e+', 'e')
+  }
   // letter mode
-  if (n < 1000) return String(n)
+  if (d.lt(1000)) return d.toFixed(0)
   for (let i = FMT_SUFFIXES.length - 1; i >= 1; i--) {
-    const threshold = Math.pow(1000, i)
-    if (n >= threshold) return (n / threshold).toFixed(2) + FMT_SUFFIXES[i]
+    const threshold = Decimal.pow(1000, i)
+    if (d.gte(threshold)) return d.div(threshold).toFixed(2) + FMT_SUFFIXES[i]
   }
-  return String(n)
+  return d.toFixed(0)
 }
 
 function esc (s) {
@@ -2838,7 +2848,7 @@ function bjDeal () {
   if (!isConnected) { log('Connect to a server first', 'warn'); return }
   const bet = parseShortNum(el.bjBetInput?.value || '0')
   if (!bet || bet <= 0) { log('Enter a valid bet', 'warn'); return }
-  if (bet * 1.05 > player.money) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
+  if (D(bet).mul(1.05).gt(player.money)) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
   if (bjCurrentMaxBet > 0 && bet > bjCurrentMaxBet) { log(`Max bet at this table is $${fmt(bjCurrentMaxBet)}`, 'warn'); return }
   send({ type: 'action', action: 'bj_deal', bet })
 }
@@ -3288,7 +3298,7 @@ function renderBlackMarket () {
   if (!container) return
   container.innerHTML = ''
   for (const [id, item] of Object.entries(BLACK_MARKET_DEFS)) {
-    const cost = Math.max(1000, Math.floor((player.money || 0) * item.cost_pct))
+    const cost = Decimal.max(1000, player.money.mul(item.cost_pct).floor())
     const expiry = (player.active_boosts || {})[id] || 0
     const isActive = expiry > Date.now() / 1000
     const secsLeft = isActive ? Math.max(0, Math.round(expiry - Date.now() / 1000)) : 0
@@ -3307,7 +3317,7 @@ function renderBlackMarket () {
     if (btn && !isActive) {
       btn.addEventListener('click', () => {
         if (!isConnected) { log('Not connected', 'warn'); return }
-        if ((player.money || 0) < cost) { log(`Need $${fmt(cost)} for ${item.name}`, 'warn'); return }
+        if (player.money.lt(cost)) { log(`Need $${fmt(cost)} for ${item.name}`, 'warn'); return }
         send({ type: 'action', action: 'blackmarket_buy', item_id: id })
       })
     }
@@ -3445,7 +3455,7 @@ function _crashTickStop () {
     _crashBet = parseShortNum($('crash-bet-input')?.value || '0') || 0
     if (_crashBet <= 0) { log('Enter a valid bet', 'warn'); return }
     if (_crashBet < _crashMinBet) { log(`Minimum bet is $${fmt(_crashMinBet)}`, 'warn'); return }
-    if (_crashBet * 1.05 > player.money) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
+    if (D(_crashBet).mul(1.05).gt(player.money)) { log('Not enough money (bet + 5% house fee)', 'warn'); return }
     send({ type: 'action', action: 'crash_start', bet: _crashBet, minbet: _crashMinBet })
   })
   $('crash-cashout-btn')?.addEventListener('click', () => {

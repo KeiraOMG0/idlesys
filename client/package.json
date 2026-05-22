@@ -1,6 +1,6 @@
 {
   "name": "idle-sys",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "IDLE.SYS — Multiplayer Incremental Game",
   "main": "main.js",
   "author": "Keira",

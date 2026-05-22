@@ -1374,6 +1374,13 @@ body.mobile #snake-canvas                  { width: min(80vw, 300px); height: mi
           <span style="color:var(--text);">Roulette</span> — bet on red/black (1:1), dozens (2:1), zero (35:1), or a straight number (35:1).<br>
           <span style="color:var(--text);">Crash</span> — the multiplier climbs 1% every 100ms from 1×. Reaching 2× is fairly likely — but the crash chance ramps up quickly after that, so holding on gets dangerous fast. Cash out before it crashes to win bet × multiplier. Survive all the way to 200× and you win the jackpot automatically.</div>
 
+          <div style="color:var(--amber);letter-spacing:2px;margin-bottom:4px;margin-top:12px;">POKER</div>
+          <div>Texas Hold'em for up to 6 players. A 5% rake is taken from each pot (capped at $1M per hand) and goes to the house.<br><br>
+          <span style="color:var(--text);">Small blind / Big blind</span> — forced bets posted by the two players left of the dealer before any cards are dealt. The big blind sets the minimum bet for the round. Example: SB $500, BB $1k means the minimum raise is $1k.<br><br>
+          <span style="color:var(--text);">Min buy-in</span> — the least you can sit down with. You join at this amount automatically when you create a room. Must be at least 1× the big blind.<br><br>
+          <span style="color:var(--text);">Max buy-in</span> — the most chips you can bring to the table. Must be at least the min buy-in.<br><br>
+          Bet actions: <span style="color:var(--text);">Check</span> (pass if no bet), <span style="color:var(--text);">Call</span> (match the current bet), <span style="color:var(--text);">Raise</span> (increase the bet), <span style="color:var(--text);">Fold</span> (discard your hand). If you don't act within 30 seconds you are auto-folded.</div>
+
           <div style="color:var(--amber);letter-spacing:2px;margin-bottom:4px;margin-top:12px;">TOKENS</div>
           <div>Name tokens let you change your display name after the free first change. Earn them through gameplay.</div>
 
@@ -1477,6 +1484,7 @@ body.mobile #snake-canvas                  { width: min(80vw, 300px); height: mi
 </div>
 
 <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;"></canvas>
+<script src="assets/break_infinity.js"></script>
 <script src="connection.js"></script>
 <script src="renderer.js"></script>
 </body>
