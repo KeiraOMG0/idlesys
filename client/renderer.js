@@ -151,7 +151,7 @@ let pokerHoleCards  = []    // private hole cards
 let pokerMyId       = null  // set on login
 
 // Version — populated from Electron
-let CURRENT_VERSION = '2.7.0'
+let CURRENT_VERSION = '2.7.1'
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id)
