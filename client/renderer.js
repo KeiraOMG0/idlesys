@@ -1,5 +1,5 @@
 /**
- * IDLE.SYS — Renderer v2.7.1
+ * IDLE.SYS — Renderer v2.7.2
  */
 
 // ── Bind window controls IMMEDIATELY ─────────────────────────────────────────
@@ -151,7 +151,7 @@ let pokerHoleCards  = []    // private hole cards
 let pokerMyId       = null  // set on login
 
 // Version — populated from Electron
-let CURRENT_VERSION = '2.7.1'
+let CURRENT_VERSION = '2.7.2'
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id)
@@ -957,7 +957,7 @@ function switchTab (name) {
     if (pokerRoomState) {
       renderPokerTable()
     } else {
-      send({ type: 'poker_list_rooms' })
+      send({ type: 'action', action: 'poker_list_rooms' })
     }
   }
 }
@@ -1283,6 +1283,20 @@ function handleMessage (msg) {
         const i1 = $('gift-target-input'); if (i1) i1.value = ''
         const i2 = $('gift-amount-input'); if (i2) i2.value = ''
       }
+      if (msg.action === 'poker_list_rooms') {
+        pokerRooms = msg.rooms || []
+        if ($('tab-poker')?.classList.contains('active') && !pokerRoomState) renderPokerLobby()
+      }
+      if (msg.action === 'poker_create_room' || msg.action === 'poker_join_room') {
+        if (msg.room) pokerRoomState = msg.room
+        if ($('tab-poker')?.classList.contains('active')) renderPokerTable()
+      }
+      if (msg.action === 'poker_leave_room') {
+        pokerRoomState = null
+        pokerHoleCards = []
+        if ($('tab-poker')?.classList.contains('active')) renderPokerLobby()
+        send({ type: 'action', action: 'poker_list_rooms' })
+      }
       break
 
     case 'leaderboard':
@@ -1497,41 +1511,56 @@ function handleMessage (msg) {
 
     // ── Poker messages ────────────────────────────────────────────────────
 
-    case 'poker_rooms':
-      pokerRooms = msg.rooms || []
-      if ($('tab-poker')?.classList.contains('active') && !pokerRoomState) {
-        renderPokerLobby()
-      }
-      break
+    case 'poker_state': {
+      // Server broadcasts room state for every event
+      const event = msg.event || ''
+      // Update our local room state with everything except the event field
+      const { event: _ev, type: _t, ...roomData } = msg
+      pokerRoomState = roomData
 
-    case 'poker_room_state':
-      pokerRoomState = msg.room
+      if (event === 'hand_result') {
+        const winners = msg.winners || []
+        if (winners.length) {
+          winners.forEach(w => {
+            const wName = esc(w.pid === pokerMyId ? 'You' : (pokerRoomState?.seats?.find(s => s.pid === w.pid)?.name || w.pid?.slice(0, 8) || '?'))
+            const handName = esc(w.hand_name || '')
+            pokerLog(`${wName} wins $${fmt(w.amount)}${handName ? ' with ' + handName : ''}`, 'ok')
+          })
+        }
+        pokerHoleCards = []
+      } else if (event === 'player_fold') {
+        const fName = msg.folded_pid === pokerMyId ? 'You' : (pokerRoomState?.seats?.find(s => s.pid === msg.folded_pid)?.name || msg.folded_pid?.slice(0, 8) || '?')
+        pokerLog(`${esc(fName)} folded`)
+      } else if (event === 'player_call') {
+        const cName = msg.pid === pokerMyId ? 'You' : (pokerRoomState?.seats?.find(s => s.pid === msg.pid)?.name || msg.pid?.slice(0, 8) || '?')
+        pokerLog(`${esc(cName)} called $${fmt(msg.amount || 0)}`)
+      } else if (event === 'player_check') {
+        const ckName = msg.pid === pokerMyId ? 'You' : (pokerRoomState?.seats?.find(s => s.pid === msg.pid)?.name || msg.pid?.slice(0, 8) || '?')
+        pokerLog(`${esc(ckName)} checked`)
+      } else if (event === 'player_raise') {
+        const rName = msg.pid === pokerMyId ? 'You' : (pokerRoomState?.seats?.find(s => s.pid === msg.pid)?.name || msg.pid?.slice(0, 8) || '?')
+        pokerLog(`${esc(rName)} raised to $${fmt(msg.raise_to || 0)}`)
+      } else if (event === 'player_turn') {
+        const tName = msg.acting_pid === pokerMyId ? 'Your turn' : `${esc(pokerRoomState?.seats?.find(s => s.pid === msg.acting_pid)?.name || msg.acting_pid?.slice(0, 8) || '?')}'s turn`
+        pokerLog(tName + (msg.to_call > 0 ? ` — $${fmt(msg.to_call)} to call` : ''))
+      } else if (event === 'waiting_for_players') {
+        pokerLog('Waiting for more players...', 'warn')
+      } else if (event === 'hand_started') {
+        pokerLog(`Hand #${msg.hand_number || ''} started`)
+      }
+
       if ($('tab-poker')?.classList.contains('active')) {
-        renderPokerTable()
+        if (pokerRoomState) renderPokerTable()
+        else renderPokerLobby()
       }
-      break
-
-    case 'poker_hole_cards':
-      pokerHoleCards = msg.cards || []
-      if ($('tab-poker')?.classList.contains('active') && pokerRoomState) {
-        renderPokerTable()
-      }
-      break
-
-    case 'poker_result': {
-      const winnerName = esc(msg.winner_name || 'Someone')
-      const handName   = esc(msg.hand || '')
-      const amt        = fmt(msg.amount || 0)
-      pokerLog(`${winnerName} wins $${amt}${handName ? ' with ' + handName : ''}`, 'ok')
-      log(`Poker: ${winnerName} wins $${amt}${handName ? ' (' + handName + ')' : ''}`, 'ok')
-      // Clear hole cards after hand completes
-      pokerHoleCards = []
       break
     }
 
-    case 'poker_error':
-      pokerLog(msg.msg || 'Poker error', 'err')
-      log(`Poker: ${msg.msg || 'error'}`, 'err')
+    case 'poker_hole_cards':
+      pokerHoleCards = msg.hole_cards || []
+      if ($('tab-poker')?.classList.contains('active') && pokerRoomState) {
+        renderPokerTable()
+      }
       break
 
     default:
@@ -2982,7 +3011,7 @@ function renderPokerLobby () {
   }
 
   list.innerHTML = pokerRooms.map(room => {
-    const seats  = `${room.player_count || 0}/${room.max_players || 9}`
+    const seats  = `${room.players || 0}/${room.max_players || 6}`
     const blinds = `$${fmt(room.small_blind || 0)}/$${fmt(room.big_blind || 0)}`
     const buyIn  = `$${fmt(room.min_buy_in || 0)}–$${fmt(room.max_buy_in || 0)}`
     const status = room.status === 'playing' ? '<span style="color:var(--amber);">IN GAME</span>' : '<span style="color:var(--green);">WAITING</span>'
@@ -3010,7 +3039,7 @@ function renderPokerLobby () {
         log(`Invalid buy-in (min $${fmt(minBi)}, max $${fmt(maxBi)})`, 'warn')
         return
       }
-      send({ type: 'poker_join_room', room_id: roomId, buy_in: amount })
+      send({ type: 'action', action: 'poker_join_room', room_id: roomId, buy_in: amount })
     })
   })
 }
@@ -3033,15 +3062,17 @@ function renderPokerTable () {
   const phaseEl = $('poker-phase')
   const potEl   = $('poker-pot')
   const betEl   = $('poker-current-bet')
-  if (phaseEl) phaseEl.textContent = (room.phase || 'waiting').toUpperCase()
+  // street = preflop | flop | turn | river | "" (waiting)
+  const street = room.street || (room.status === 'playing' ? 'preflop' : 'waiting')
+  if (phaseEl) phaseEl.textContent = street.toUpperCase() || 'WAITING'
   if (potEl)   potEl.textContent   = '$' + fmt(room.pot || 0)
   if (betEl)   betEl.textContent   = '$' + fmt(room.current_bet || 0)
 
-  // Community cards
+  // Community cards — server field: room.community
   const commEl = $('poker-community-cards')
   if (commEl) {
     commEl.innerHTML = ''
-    const comm = room.community_cards || []
+    const comm = room.community || []
     for (let i = 0; i < 5; i++) {
       commEl.appendChild(makeCardEl(comm[i] || null))
     }
@@ -3059,23 +3090,29 @@ function renderPokerTable () {
     }
   }
 
-  // My stack
-  const myPlayer  = (room.players || []).find(p => p.id === pokerMyId)
+  // Server uses room.seats[] with {pid, name, stack, bet, folded, all_in, card_count}
+  // Whose turn it is: room.action_idx into room.seats
+  const seats = room.seats || []
+  const actingPid = seats[room.action_idx]?.pid || null
+  const myPlayer  = seats.find(s => s.pid === pokerMyId)
   const myStackEl = $('poker-my-stack')
   if (myStackEl) myStackEl.textContent = '$' + fmt(myPlayer?.stack || 0)
 
-  // Other players
+  // Players list
   const playersEl = $('poker-players-list')
   if (playersEl) {
     playersEl.innerHTML = ''
-    const players = room.players || []
-    players.forEach((p, idx) => {
-      const isMe      = p.id === pokerMyId
-      const isActive  = room.current_player === p.id
-      const isFolded  = p.status === 'folded' || p.status === 'out'
-      const isDealer  = room.dealer_index === idx
-      const isSB      = room.sb_index     === idx
-      const isBB      = room.bb_index     === idx
+    seats.forEach((s, idx) => {
+      const isMe      = s.pid === pokerMyId
+      const isActive  = idx === room.action_idx && room.status === 'playing'
+      const isFolded  = s.folded
+      const isDealer  = idx === room.dealer_idx
+      // SB/BB computed from dealer_idx (server doesn't broadcast sb/bb idx in state)
+      const n = seats.length
+      const sbIdx = n === 2 ? room.dealer_idx : (room.dealer_idx + 1) % n
+      const bbIdx = n === 2 ? (room.dealer_idx + 1) % n : (room.dealer_idx + 2) % n
+      const isSB = idx === sbIdx
+      const isBB = idx === bbIdx
 
       const slot = document.createElement('div')
       slot.className = 'poker-player-slot' +
@@ -3088,20 +3125,20 @@ function renderPokerTable () {
       if (isSB)     markers += '<span class="poker-marker sb">SB</span>'
       if (isBB)     markers += '<span class="poker-marker bb">BB</span>'
 
-      const lastAction = p.last_action ? `<span class="poker-player-action">[${esc(p.last_action)}]</span>` : ''
-      const nameText   = esc(p.name || p.id?.slice(0, 8) || '?') + (isMe ? ' (you)' : '')
+      const betText    = s.bet > 0 ? `<span class="poker-player-action">bet $${fmt(s.bet)}</span>` : ''
+      const allInBadge = s.all_in ? '<span class="poker-player-action" style="color:var(--amber)">ALL IN</span>' : ''
+      const nameText   = esc(s.name || s.pid?.slice(0, 8) || '?') + (isMe ? ' (you)' : '')
 
       slot.innerHTML = `
         <span class="poker-player-name">${nameText}${markers}</span>
-        <span class="poker-player-stack">$${fmt(p.stack || 0)}</span>
-        ${lastAction}`
+        <span class="poker-player-stack">$${fmt(s.stack || 0)}</span>
+        ${betText}${allInBadge}`
 
-      // Show face-down cards for other players who haven't folded, if in a hand
-      if (!isMe && !isFolded && room.phase && room.phase !== 'waiting') {
+      // Face-down cards for opponents in a live hand
+      if (!isMe && !isFolded && room.status === 'playing' && s.card_count > 0) {
         const cardRow = document.createElement('div')
         cardRow.style.cssText = 'display:flex;gap:2px;margin-left:4px;'
-        cardRow.appendChild(makeCardEl(null))
-        cardRow.appendChild(makeCardEl(null))
+        for (let i = 0; i < (s.card_count || 2); i++) cardRow.appendChild(makeCardEl(null))
         slot.insertBefore(cardRow, slot.firstChild)
       }
 
@@ -3109,54 +3146,49 @@ function renderPokerTable () {
     })
   }
 
-  // Action buttons (only shown when it's my turn and game is playing)
-  const actionsEl  = $('poker-actions')
-  const isMyTurn   = room.current_player === pokerMyId && room.phase && room.phase !== 'waiting'
+  // Action buttons — only when it's my turn during a live hand
+  const actionsEl = $('poker-actions')
+  const isMyTurn  = actingPid === pokerMyId && room.status === 'playing'
   if (actionsEl) actionsEl.style.display = isMyTurn ? '' : 'none'
 
   // Call button label
   const callBtn = $('poker-call-btn')
-  if (callBtn && room.current_bet > 0) {
-    const myBet  = myPlayer?.current_bet || 0
+  if (callBtn) {
+    const myBet  = myPlayer?.bet || 0
     const toCall = Math.max(0, (room.current_bet || 0) - myBet)
     callBtn.textContent = toCall > 0 ? `CALL $${fmt(toCall)}` : 'CALL'
-  } else if (callBtn) {
-    callBtn.textContent = 'CALL'
   }
 
   // Check button — disabled if there's a bet to call
   const checkBtn = $('poker-check-btn')
   if (checkBtn) {
-    const myBet  = myPlayer?.current_bet || 0
+    const myBet  = myPlayer?.bet || 0
     const toCall = Math.max(0, (room.current_bet || 0) - myBet)
     checkBtn.disabled = toCall > 0
     checkBtn.style.opacity = toCall > 0 ? '0.35' : ''
   }
 
-  // Start button (host only, waiting phase)
+  // Start button (creator only, waiting status)
   const startRow = $('poker-start-row')
   if (startRow) {
-    const isHost    = room.host === pokerMyId
-    const isWaiting = !room.phase || room.phase === 'waiting'
-    const hasPlayers = (room.players || []).length >= 2
+    const isHost     = room.creator_pid === pokerMyId
+    const isWaiting  = room.status !== 'playing'
+    const hasPlayers = seats.length >= 2
     startRow.style.display = (isHost && isWaiting) ? '' : 'none'
     const startBtn = $('poker-start-btn')
     if (startBtn) startBtn.disabled = !hasPlayers
   }
 
-  // Leave button (between hands / waiting)
+  // Leave button
   const leaveBtn = $('poker-leave-btn')
-  if (leaveBtn) {
-    const canLeave = !room.phase || room.phase === 'waiting' || room.phase === 'showdown'
-    leaveBtn.style.display = canLeave ? '' : 'none'
-  }
+  if (leaveBtn) leaveBtn.style.display = ''
 }
 
 // Wire up all poker button event listeners (called once from init)
 function initPokerUI () {
   // Refresh lobby
   $('poker-refresh-btn')?.addEventListener('click', () => {
-    send({ type: 'poker_list_rooms' })
+    send({ type: 'action', action: 'poker_list_rooms' })
   })
 
   // Toggle create form
@@ -3191,7 +3223,7 @@ function initPokerUI () {
     if (isNaN(min) || min <= 0)         { log('Invalid min buy-in', 'warn'); return }
     if (isNaN(max) || max < min)        { log('Max buy-in must be >= min', 'warn'); return }
 
-    send({ type: 'poker_create_room', name, small_blind: sb, big_blind: bb,
+    send({ type: 'action', action: 'poker_create_room', name, small_blind: sb, big_blind: bb,
            min_buy_in: min, max_buy_in: max })
 
     const form = $('poker-create-form')
@@ -3206,35 +3238,35 @@ function initPokerUI () {
   // Leave table
   $('poker-leave-btn')?.addEventListener('click', () => {
     if (!pokerRoomState) return
-    send({ type: 'poker_leave_room', room_id: pokerRoomState.id })
+    send({ type: 'action', action: 'poker_leave_room', room_id: pokerRoomState.id })
     pokerRoomState = null
     pokerHoleCards = []
     renderPokerLobby()
-    send({ type: 'poker_list_rooms' })
+    send({ type: 'action', action: 'poker_list_rooms' })
   })
 
   // Start game
   $('poker-start-btn')?.addEventListener('click', () => {
     if (!pokerRoomState) return
-    send({ type: 'poker_start_game', room_id: pokerRoomState.id })
+    send({ type: 'action', action: 'poker_start_game', room_id: pokerRoomState.id })
   })
 
   // Action: Fold
   $('poker-fold-btn')?.addEventListener('click', () => {
     if (!pokerRoomState) return
-    send({ type: 'poker_action', room_id: pokerRoomState.id, action: 'fold' })
+    send({ type: 'action', action: 'poker_action', poker_action: 'fold', room_id: pokerRoomState?.id })
   })
 
   // Action: Check
   $('poker-check-btn')?.addEventListener('click', () => {
     if (!pokerRoomState) return
-    send({ type: 'poker_action', room_id: pokerRoomState.id, action: 'check' })
+    send({ type: 'action', action: 'poker_action', poker_action: 'check', room_id: pokerRoomState?.id })
   })
 
   // Action: Call
   $('poker-call-btn')?.addEventListener('click', () => {
     if (!pokerRoomState) return
-    send({ type: 'poker_action', room_id: pokerRoomState.id, action: 'call' })
+    send({ type: 'action', action: 'poker_action', poker_action: 'call', room_id: pokerRoomState?.id })
   })
 
   // Action: Raise — toggle input row visibility
@@ -3254,7 +3286,7 @@ function initPokerUI () {
     const raw = $('poker-raise-input')?.value || ''
     const amount = parseMoneyInput(raw)
     if (isNaN(amount) || amount <= 0) { log('Invalid raise amount', 'warn'); return }
-    send({ type: 'poker_action', room_id: pokerRoomState.id, action: 'raise', amount })
+    send({ type: 'action', action: 'poker_action', poker_action: 'raise', amount, room_id: pokerRoomState?.id })
     const row = $('poker-raise-row')
     if (row) row.style.display = 'none'
     const inp = $('poker-raise-input')
