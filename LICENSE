@@ -2,47 +2,69 @@ IDLE.SYS — Dual License
 
 Copyright (C) 2026 Keira
 
-This software is available under two licenses:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This software is made available under a dual-licensing model. You may use it
+under the terms of the GNU Affero General Public License v3 (AGPL-3.0), or,
+if you require terms that differ from AGPL-3.0, under a separate commercial
+license obtainable from the copyright holder.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. GNU AFFERO GENERAL PUBLIC LICENSE v3 (AGPL-3.0)
-   For individuals and non-commercial use
+OPTION 1 — GNU AFFERO GENERAL PUBLIC LICENSE v3 (AGPL-3.0)
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Affero General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
 
-   The full text of the AGPL-3.0 license is available at:
-   https://www.gnu.org/licenses/agpl-3.0.html
+The full text of the AGPL-3.0 is available at:
+https://www.gnu.org/licenses/agpl-3.0.html
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-2. COMMERCIAL LICENSE
-   For businesses and commercial use
-
-   If you wish to use this software in a commercial product or service without
-   complying with the AGPL-3.0 (e.g. you do not want to disclose your source
-   code), you must obtain a commercial license.
-
-   To inquire about a commercial license, contact: kykyglc@gmail.com
-
-   See COMMERCIAL_LICENSE.md for details.
+Anyone — individual or organisation — who complies with the terms of AGPL-3.0
+may use, modify, and distribute this software under that license at no charge.
+No additional permission from the copyright holder is required for AGPL-3.0
+compliant use.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-WHICH LICENSE APPLIES TO YOU?
+OPTION 2 — COMMERCIAL LICENSE
 
-  - Individual / personal use         → AGPL-3.0 (free)
-  - Open-source project               → AGPL-3.0 (free, must remain AGPL)
-  - Company / commercial product      → Commercial license required
-  - Embedding in a proprietary app    → Commercial license required
+A commercial license is available for parties who cannot or do not wish to
+comply with the terms of AGPL-3.0 — for example, those who need to keep
+modifications to the source code proprietary, or who distribute or deploy the
+software as part of a product or service without fulfilling AGPL-3.0's
+copyleft and network-use disclosure requirements.
 
-If you are unsure which license applies to your use case, contact:
+The commercial license is an optional alternative, not a requirement for
+AGPL-3.0 compliant use. If you can and do comply with AGPL-3.0, no
+commercial license is needed regardless of whether your use is personal,
+academic, or commercial in nature.
+
+To enquire about a commercial license, contact: kykyglc@gmail.com
+
+See COMMERCIAL_LICENSE.md for further details.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHOOSING A LICENSE — QUICK GUIDE
+
+  You ONLY need a commercial license if you want to:
+    - Keep your modifications proprietary (not release source under AGPL)
+    - Distribute or deploy a modified version without meeting AGPL-3.0's
+      network-use source disclosure requirements
+    - Otherwise avoid the copyleft obligations of AGPL-3.0
+
+  You do NOT need a commercial license if you:
+    - Use, modify, or redistribute under full AGPL-3.0 compliance
+    - Run an unmodified version for any purpose (personal, internal, commercial)
+      while making the source available as required by AGPL-3.0
+    - Contribute modifications back under AGPL-3.0
+
+If you are unsure which option applies to your situation, contact:
 kykyglc@gmail.com
