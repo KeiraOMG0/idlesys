@@ -90,6 +90,7 @@ Please keep PRs focused — one feature or fix per PR. If you're planning someth
 
 ## License
 
-AGPL-3.0 with an additional commercial use restriction — see [LICENSE](LICENSE) for details.
+Dual-licensed — see [LICENSE](LICENSE) and [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) for details.
 
-**Short version:** free to use, modify, and contribute. You may not sell it or monetise a hosted version without written permission from the author.
+- **Individuals & open-source projects** — free under [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html)
+- **Companies & commercial use** — requires a commercial license; contact kykyglc@gmail.com

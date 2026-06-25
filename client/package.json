@@ -4,7 +4,7 @@
   "description": "IDLE.SYS — Multiplayer Incremental Game",
   "main": "main.js",
   "author": "Keira",
-  "license": "(AGPL-3.0-only OR LicenseRef-Commercial)",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",

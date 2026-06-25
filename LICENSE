@@ -1,40 +1,48 @@
-                    GNU AFFERO GENERAL PUBLIC LICENSE
-                       Version 3, 19 November 2007
+IDLE.SYS — Dual License
 
-IDLE.SYS — Copyright (C) 2026 Keira
+Copyright (C) 2026 Keira
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This software is available under two licenses:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
+1. GNU AFFERO GENERAL PUBLIC LICENSE v3 (AGPL-3.0)
+   For individuals and non-commercial use
 
--------------------------------------------------------------------------------
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-ADDITIONAL COMMERCIAL USE RESTRICTION
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU Affero General Public License for more details.
 
-The rights granted above do NOT include the right to sell, sublicense,
-or otherwise commercially exploit this software or any derivative work
-without prior written permission from the author (Keira).
+   The full text of the AGPL-3.0 license is available at:
+   https://www.gnu.org/licenses/agpl-3.0.html
 
-"Commercial use" includes but is not limited to:
-  - Selling access to a hosted version of this game
-  - Bundling this software in a paid product
-  - Using this software to generate revenue through ads, subscriptions,
-    or any other monetisation mechanism
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Personal use, self-hosting for non-revenue purposes, and open-source
-contributions are explicitly permitted and encouraged.
+2. COMMERCIAL LICENSE
+   For businesses and commercial use
 
-To inquire about a commercial license, contact: kykyglc@gmail.com
+   If you wish to use this software in a commercial product or service without
+   complying with the AGPL-3.0 (e.g. you do not want to disclose your source
+   code), you must obtain a commercial license.
 
--------------------------------------------------------------------------------
+   To inquire about a commercial license, contact: kykyglc@gmail.com
 
-Full license text: https://www.gnu.org/licenses/agpl-3.0.txt
+   See COMMERCIAL_LICENSE.md for details.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHICH LICENSE APPLIES TO YOU?
+
+  - Individual / personal use         → AGPL-3.0 (free)
+  - Open-source project               → AGPL-3.0 (free, must remain AGPL)
+  - Company / commercial product      → Commercial license required
+  - Embedding in a proprietary app    → Commercial license required
+
+If you are unsure which license applies to your use case, contact:
+kykyglc@gmail.com
